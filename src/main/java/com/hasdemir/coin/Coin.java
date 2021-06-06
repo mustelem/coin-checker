@@ -2,70 +2,74 @@ package com.hasdemir.coin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.lang.Math;
 
 public class Coin {
     private enum Type {NICKEL, QUARTER}
 
     private final Type fType;
     private final int fYear;
-
+    
     public Coin (Type type, int year) {
         fType = type;
         fYear = year;
     }
 
-    public boolean equals(Object o) {
-    	if (this == o) {
-    		return true;
+    public static List<Coin> reduce(List<Coin> l) {
+    	List<Coin> reducedList = new ArrayList<Coin>();
+    	
+    	Iterator<Coin> it = l.iterator();
+    	
+    	while (it.hasNext()) {
+    		Coin c = it.next();
+    		if (c.fType.equals(Type.QUARTER)) {
+    			reducedList.add(c);
+    		}
     	}
     	
-    	if (o == null) {
-    		return false;
-    	}
-    	
-    	if (!this.getClass().equals(o.getClass())) {
-    		return false;
-    	}
-    	Coin temp = (Coin) o;
-    	if (this.fType.equals(temp.fType) && this.fYear == temp.fYear) {
-    		return true;
-    	}
-    	
-    	return false;
-    }
-    
-    public int hashCode() {
-    	return this.fType.ordinal() * this.fYear;
+    	return reducedList;
     }
     
     public static boolean areQuartersEquivalent(List<Coin> aList, List<Coin> bList) {
-    	HashSet<Coin> a = new HashSet<Coin>();    	
-    	HashSet<Coin> b = new HashSet<Coin>();
     	
-    	Iterator<Coin> it = aList.iterator();
-    	
-    	while (it.hasNext()) {
-    		Coin temp = it.next();
-    		if (temp.fType.equals(Type.QUARTER)) {
-        		a.add(temp);    			
+    	List<Coin> reducedAList = reduce(aList);
+    	List<Coin> reducedBList = reduce(bList);
+
+    	if (reducedAList.size() == reducedBList.size()) {
+    		Iterator<Coin> aIt = reducedAList.iterator();
+    		Iterator<Coin> bIt = reducedBList.iterator();
+    		while (aIt.hasNext()) {
+    			Coin a = aIt.next();
+    			Coin b = bIt.next();
+    			
+    			if (a.fYear == b.fYear) {
+    				continue;
+    			} else {
+    				return false;
+    			}
     		}
+    		
+    		return true;
     	}
 
-    	it = bList.iterator();
-    	while (it.hasNext()) {
-    		Coin temp = it.next();
-    		if (temp.fType.equals(Type.QUARTER)) {
-        		b.add(temp);    			
-    		}
-    	}
-    	
-    	return a.equals(b);
+    	return false;
     }
 
-
+    public static List<Coin> getBigArray(int size) {
+    	List<Coin> list = new ArrayList<Coin>();
+    	
+    	for (int i = 0; i < size; i++) {
+    		int flip = ((int) (Math.random() * 10)) % 2;
+    		int year = 1900 + ((int) (Math.random() * 100));
+    		Type newType = flip == 0 ? Type.NICKEL : Type.QUARTER;
+    		list.add(new Coin(newType, year));
+    	}
+    	
+		return list;    	
+    }
+    
     public static void main(String[] args) {
          System.out.println("Test 1, Expecting true: " + areQuartersEquivalent(
                  Arrays.asList(
@@ -107,16 +111,36 @@ public class Coin {
                      new Coin(Type.NICKEL, 1971),
                      new Coin(Type.NICKEL, 1900))));
 
-        System.out.println("Test 4, Expecting false: " +areQuartersEquivalent(new ArrayList<Coin>(),
+        System.out.println("Test 5, Expecting false: " +areQuartersEquivalent(new ArrayList<Coin>(),
                 Arrays.asList(
                      new Coin(Type.QUARTER, 1971),
                      new Coin(Type.NICKEL, 1900))));
 
-        System.out.println("Test 4, Expecting false: " +areQuartersEquivalent(
+        System.out.println("Test 6, Expecting false: " +areQuartersEquivalent(
                 Arrays.asList(new Coin(Type.QUARTER, 1971),
                         new Coin(Type.QUARTER, 1971)),
                 Arrays.asList(
                      new Coin(Type.QUARTER, 1971),
                      new Coin(Type.NICKEL, 1900))));
+        
+        System.out.println("Test 7, Expecting false: " + areQuartersEquivalent(
+                Arrays.asList(
+                    new Coin(Type.NICKEL, 1970),
+                    new Coin(Type.QUARTER, 1971),
+                    new Coin(Type.NICKEL, 1940),
+                    new Coin(Type.QUARTER, 1971),
+                    new Coin(Type.QUARTER, 1900)),
+
+                Arrays.asList(
+                    new Coin(Type.QUARTER, 1971),
+                    new Coin(Type.QUARTER, 1900))
+                ));
+
+        int largeNum = 1000000;
+        List<Coin> a1 = getBigArray(largeNum);
+        List<Coin> a2 = getBigArray(largeNum);
+        System.out.println("Test 8, Expecting false: " + areQuartersEquivalent(a1, a2));
+        System.out.println("Test 9, Expecting true: " + areQuartersEquivalent(a1, a1));
+
     }
 }
